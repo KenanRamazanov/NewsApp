@@ -4,7 +4,7 @@
 //
 //  Created by Kanan  on 12.12.24.
 //
-
+// git commit -m "Creating AP"I
 import Foundation
 
 final class APICaller {
@@ -14,7 +14,7 @@ final class APICaller {
         static let topHeadlineURL = URL(string: "https://newsapi.org/v2/top-headlines?country=US&apiKey=d2aa5f20c049474d93919a98ff00c02f")
     }
     private init () {}
-        public func getTopStories(completion: @escaping (Result<[String], Error>) -> Void) {
+    public func getTopStories(completion: @escaping (Result<[Article], Error>) -> Void) {
             
             guard let url = Constants.topHeadlineURL else {
                 return
@@ -29,6 +29,7 @@ final class APICaller {
                     do {
                         let result = try JSONDecoder().decode(APIResponse.self, from: data)
                         print("Articles: \(result.articles.count)")
+                        completion(.success(result.articles))
                     }
                     catch {
                         completion(.failure(error))
@@ -50,10 +51,10 @@ struct APIResponse: Codable {
 struct Article: Codable {
     let source : Source
     let title: String
-//    let url: String
-//    let urlToImage: String
-    let description: String
-//    let publishedAt: String
+    let url: String?
+    let urlToImage: String?
+    let description: String?
+    let publishedAt: String
 }
 
 
