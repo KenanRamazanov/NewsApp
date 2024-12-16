@@ -6,7 +6,7 @@
 //
 
 import UIKit
-
+import SafariServices
 class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource {
 
     
@@ -15,8 +15,10 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
         table.register(NewsTableViewCell.self, forCellReuseIdentifier: NewsTableViewCell.identifier)
         return table
     }()
-    
+    private var articles = [Article]()
     private var viewModels = [NewsTableViewCellViewModel]()
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "News"
@@ -25,9 +27,19 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
         tableView.dataSource = self
         view.backgroundColor = .systemBackground
         
+        fetchTopStories()
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        tableView.frame = view.bounds
+    }
+    
+    private func fetchTopStories() {
         APICaller.shared.getTopStories { [weak self] result in
             switch result {
             case .success(let articles):
+                self?.articles = articles
                 self?.viewModels = articles.compactMap({
                     NewsTableViewCellViewModel(title: $0.title,
                     subtitle: $0.description ?? "No Description",
@@ -43,11 +55,6 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
                 print(error)
             }
         }
-    }
-    
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        tableView.frame = view.bounds
     }
 
 /// TABLE
@@ -67,8 +74,15 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        let viewModel = viewModels[indexPath.row]
+        let articles = articles[indexPath.row]
         
+        guard let url = URL(string: articles.url ?? "") else {
+            return
+        }
+        
+        
+        let vc = SFSafariViewController(url: url)
+        present(vc, animated: true)
         
     }
     
